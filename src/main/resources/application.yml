@@ -1,0 +1,46 @@
+server:
+  port:8081
+
+spring:
+  application:
+    name: sharding-jdbc-project
+  shardingsphere:
+    props:
+      sql:
+        show: true
+    datasource:
+      names: ds0,ds1
+      ds0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/test1?useUnicode=true&characterEncoding=utf8
+        username: root
+        password: root
+      ds1:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/test2?useUnicode=true&characterEncoding=utf8
+        username: root
+        password: root
+    sharding:
+      tables:
+        t_order:
+          database-strategy:
+            standard:
+              sharding-column: source_type
+              precise-algorithm-class-name: com.ph.policy.DatabasePolicy
+          table-strategy:
+            standard:
+              sharding-column: id
+              precise-algorithm-class-name: com.ph.policy.TablePolicy
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+            props:
+              worker-id: 123
+          actual-data-nodes: ds$->{0..1}.t_order_$->{0..1}
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.ph.infrustructure.po
+  map-underscore-to-camel-case: true
